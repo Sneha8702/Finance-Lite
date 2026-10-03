@@ -1,11 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate
 
 
 # ------------------ HELPER ------------------
@@ -18,86 +15,59 @@ def get_tokens(user):
 
 
 # ------------------ SIGNUP ------------------
+from django.db import IntegrityError, transaction
+from rest_framework.throttling import ScopedRateThrottle
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from chelav.serializers import SignupSerializer
+from chelav.models import AccountEmail
+from chelav.email_auth import send_action_email
+from smtplib import SMTPException
+
+
 class SignupView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "signup"
 
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        password2 = request.data.get('password2')
-
-        # Validation
-        if not username or not password or not password2:
-            return Response(
-                {"error": "All fields are required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if password != password2:
-            return Response(
-                {"error": "Passwords do not match"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        if User.objects.filter(username=username).exists():
-            return Response(
-                {"error": "Username already exists"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Create user
-        user = User.objects.create_user(
-            username=username,
-            password=password
-        )
-
-        # 🔥 Auto login after signup
-        tokens = get_tokens(user)
-
-        return Response({
-            "message": "User created successfully",
-            "tokens": tokens
-        }, status=status.HTTP_201_CREATED)
+        serializer = SignupSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"error": " ".join(str(message) for messages in serializer.errors.values() for message in messages),
+                             "errors": serializer.errors}, status=400)
+        try:
+            with transaction.atomic():
+                user = serializer.save()
+                AccountEmail.objects.create(user=user, email=user.email)
+                send_action_email(user, "verify")
+        except IntegrityError:
+            return Response({"error": "Username already exists"}, status=400)
+        except (SMTPException, OSError):
+            return Response({"error": "Could not send verification email. Please try signing up again later."}, status=503)
+        return Response({"message": "Check your email to verify your account before logging in."}, status=201)
 
 
-# ------------------ LOGIN ------------------
-class LoginView(APIView):
-    permission_classes = [AllowAny]
+class LoginTokenView(TokenObtainPairView):
+    authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
 
-        if not username or not password:
-            return Response(
-                {"error": "Username and password required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+class RefreshTokenView(TokenRefreshView):
+    authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "refresh"
 
-        user = authenticate(username=username, password=password)
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except get_user_model().DoesNotExist:
+            raise InvalidToken("The account no longer exists") from None
 
-        if user is None:
-            return Response(
-                {"error": "Invalid credentials"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
 
-        if not user.is_active:
-            return Response(
-                {"error": "User account is disabled"},
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        tokens = get_tokens(user)
-
-        return Response({
-            "message": "Login successful",
-            "tokens": tokens,
-            "user": {
-                "id": user.id,
-                "username": user.username
-            }
-        }, status=status.HTTP_200_OK)
+LoginView = LoginTokenView
 
 
 # ------------------ LOGOUT ------------------
@@ -105,24 +75,14 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        raw_token = request.data.get("refresh")
+        if not isinstance(raw_token, str) or not raw_token:
+            return Response({"error": "Refresh token required"}, status=400)
         try:
-            refresh_token = request.data.get("refresh")
-
-            if not refresh_token:
-                return Response(
-                    {"error": "Refresh token required"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(raw_token)
+            if str(token.get("user_id")) != str(request.user.pk):
+                return Response({"error": "Token does not belong to this account"}, status=400)
             token.blacklist()
-
-            return Response({
-                "message": "Logged out successfully"
-            }, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            return Response(
-                {"error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        except TokenError:
+            return Response({"error": "Invalid or expired refresh token"}, status=400)
+        return Response({"message": "Logged out successfully"})

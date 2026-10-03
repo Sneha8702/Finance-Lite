@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getExpenses, getCategories } from "../../services/api";
 
 function ExpensesTab() {
@@ -32,7 +32,7 @@ function ExpensesTab() {
   };
 
   // 📡 Fetch expenses with filters and pagination
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
       const params = { page }; // Include page parameter
@@ -54,7 +54,7 @@ function ExpensesTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, filters]);
 
   useEffect(() => {
     fetchCategories();
@@ -68,7 +68,7 @@ function ExpensesTab() {
   // Fetch expenses when page or filters change
   useEffect(() => {
     fetchExpenses();
-  }, [page, filters]);
+  }, [fetchExpenses]);
 
   const handleFilterChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });

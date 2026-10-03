@@ -14,25 +14,27 @@ function Dashboard() {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [username, setUsername] = useState("");
+  const [userDetails, setUserDetails] = useState({});
   const [activeTab, setActiveTab] = useState("home");
 
   // 🚪 Logout
   const handleLogout = async () => {
     await logoutUser();
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   // 🔐 Check auth & Load Data
   useEffect(() => {
     const access = localStorage.getItem("access");
     if (!access) {
-      navigate("/");
+      navigate("/", { replace: true });
     } else {
       // 🔄 Fetch real user details
       getUserDetails()
         .then((data) => {
           if (data && data.username) {
             setUsername(data.username);
+            setUserDetails(data);
             // Optionally sync to localStorage for persistence
             localStorage.setItem("username", data.username);
           }
@@ -72,7 +74,7 @@ function Dashboard() {
       case "expenses":
         return <ExpensesTab key={`exp-${refreshKey}`} />;
       case "profile":
-        return <ProfileTab username={username} />;
+        return <ProfileTab username={username} email={userDetails.email} accountId={userDetails.id} emailVerified={userDetails.email_verified} onLogout={handleLogout} />;
       default:
         return <HomeTab username={username} />;
     }

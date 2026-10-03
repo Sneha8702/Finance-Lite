@@ -23,7 +23,7 @@ function HomeTab({ username, onTabChange }) {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
-      maximumFractionDigits: 0
+      maximumFractionDigits: 2
     }).format(amount);
   };
 
@@ -36,7 +36,7 @@ function HomeTab({ username, onTabChange }) {
   }
 
   const income = overview?.total_income_this_month || 0;
-  const expense = overview?.total_expenses || 0;
+  const expense = overview?.total_expenses_this_month || 0;
   const balance = overview?.balance || 0;
   const due = overview?.due || 0;
 
@@ -172,7 +172,7 @@ function HomeTab({ username, onTabChange }) {
         {/* 📉 Spending Analysis Section */}
         <div className="glass-card" style={{ padding: "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-            <h4 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-main)" }}>Monthly Budget Usage</h4>
+            <h4 style={{ fontSize: "16px", fontWeight: "700", color: "var(--text-main)" }}>Monthly Income Spent</h4>
             <span style={{ fontSize: "14px", fontWeight: "600", color: spendPercentage > 80 ? "#ef4444" : "var(--secondary)" }}>
               {spendPercentage.toFixed(0)}% Used
             </span>
@@ -197,8 +197,8 @@ function HomeTab({ username, onTabChange }) {
 
           <p style={{ color: "var(--text-muted)", fontSize: "13px" }}>
             {spendPercentage > 80
-              ? "Warning: You are approaching your monthly limit."
-              : "Good job! Your spending is within a healthy range."}
+              ? "Warning: You are approaching your monthly income."
+              : "Good job! Your spending is below your monthly income."}
           </p>
         </div>
 

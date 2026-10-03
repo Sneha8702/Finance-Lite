@@ -5,11 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 function Signup() {
   const [form, setForm] = useState({
     username: "",
+    email: "",
     password: "",
     password2: "",
   });
 
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const navigate = useNavigate();
 
@@ -25,6 +27,7 @@ function Signup() {
   // ---------------- HANDLE SIGNUP ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
 
     if (form.password !== form.password2) {
       setError("Passwords do not match");
@@ -33,12 +36,15 @@ function Signup() {
 
     setError("");
 
+    setSaving(true);
     try {
       await signupUser(form); // ✅ get response
-      navigate("/dashboard");
+      navigate("/verify-email", { state: { email: form.email, registered: true } });
     } catch (err) {
       console.error(err);
       setError(err?.response?.data?.error || "Signup failed");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -67,6 +73,11 @@ function Signup() {
           </div>
 
           <div className="form-group">
+            <label className="form-label" htmlFor="signup-email">Email</label>
+            <input id="signup-email" className="form-input" name="email" type="email" autoComplete="email"
+              value={form.email} onChange={handleChange} required placeholder="you@example.com" />
+          </div>
+          <div className="form-group">
             <label className="form-label">Password</label>
             <input
               className="form-input"
@@ -92,8 +103,8 @@ function Signup() {
             />
           </div>
 
-          <button className="primary-btn" type="submit">
-            Create Account
+          <button className="primary-btn" type="submit" disabled={saving}>
+            {saving ? "Sending verification?" : "Create Account"}
           </button>
         </form>
 

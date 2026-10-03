@@ -1,12 +1,30 @@
-import { useState, useEffect } from "react";
-import { useTheme } from "../../context/ThemeContext";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { deleteAccount } from "../../services/api";
+import { useTheme } from "../../context/useTheme";
 import { Sun, Moon, Shield, Mail, Trash2 } from "lucide-react";
 
-function ProfileTab({ username = "User" }) {
+function ProfileTab({ username = "User", email, accountId, emailVerified, onLogout }) {
   const { theme, toggleTheme } = useTheme();
 
-  const handleDeleteAccount = () => {
-    alert("Delete Account functionality is coming soon!");
+  const navigate = useNavigate();
+  const [confirming, setConfirming] = useState(false);
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const handleDeleteAccount = async event => {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      await deleteAccount(password);
+      navigate("/", { replace: true });
+    } catch (error) {
+      setError(error.response?.data?.error || "Could not delete your account. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -38,7 +56,7 @@ function ProfileTab({ username = "User" }) {
         {username}
       </h2>
       <p style={{ color: "var(--text-muted)", fontSize: "14px", marginBottom: "40px" }}>
-        Premium Member
+        {emailVerified ? "Email verified" : "Expense tracker account"}
       </p>
 
       <div style={{ textAlign: "left", display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -98,7 +116,7 @@ function ProfileTab({ username = "User" }) {
             <Shield size={20} color="var(--text-muted)" />
             <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>Account ID</span>
           </div>
-          <span style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "14px" }}>#882{username.length}</span>
+          <span style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "14px" }}>{accountId ? `#${accountId}` : "?"}</span>
         </div>
 
         <div style={{ 
@@ -114,12 +132,28 @@ function ProfileTab({ username = "User" }) {
             <Mail size={20} color="var(--text-muted)" />
             <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>Email</span>
           </div>
-          <span style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "14px" }}>{username.toLowerCase()}@example.com</span>
+          <span style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "14px" }}>{email || "Not provided"}</span>
         </div>
       </div>
 
-      <button 
-        onClick={handleDeleteAccount}
+      <button type="button" className="social-btn" onClick={onLogout} disabled={busy} style={{ marginTop: "24px", width: "100%" }}>Log out</button>
+      {confirming && (
+        <form onSubmit={handleDeleteAccount} style={{ textAlign: "left", marginTop: "24px" }}>
+          <h3>Delete your account permanently?</h3>
+          <p style={{ margin: "12px 0" }}>Your expenses, income, and custom categories will be deleted. This cannot be undone.</p>
+          <label className="form-label" htmlFor="delete-password">Current password</label>
+          <input id="delete-password" className="form-input" type="password" autoComplete="current-password" required
+            value={password} disabled={busy} onChange={event => setPassword(event.target.value)} />
+          {error && <p role="alert" className="error-message">{error}</p>}
+          <div style={{ display: "flex", gap: "12px", marginTop: "12px" }}>
+            <button type="submit" className="primary-btn" disabled={busy} style={{ background: "#b91c1c" }}>{busy ? "Deleting?" : "Permanently delete my account"}</button>
+            <button type="button" className="social-btn" disabled={busy} onClick={() => { setConfirming(false); setPassword(""); setError(""); }}>Cancel</button>
+          </div>
+        </form>
+      )}
+      {!confirming && <button
+        type="button"
+        onClick={() => setConfirming(true)}
         style={{ 
           marginTop: "60px",
           background: "rgba(239, 68, 68, 0.1)",
@@ -145,7 +179,7 @@ function ProfileTab({ username = "User" }) {
       >
         <Trash2 size={18} />
         Delete Account
-      </button>
+      </button>}
 
       <p style={{ marginTop: "12px", color: "rgba(255,255,255,0.2)", fontSize: "11px" }}>
         v1.0.4 • Beta

@@ -1,8 +1,6 @@
-import { Home, BarChart2, List, User, Plus } from "lucide-react";
-import { useTheme } from "../../context/ThemeContext";
+import { Home, BarChart2, List, User, Plus, LogOut } from "lucide-react";
 
-function Navbar({ activeTab, onTabChange, onAddClick }) {
-  const { theme } = useTheme();
+function Navbar({ activeTab, onTabChange, onAddClick, onLogout }) {
 
   const navItems = [
     { id: "home", label: "Home", icon: <Home size={20} /> },
@@ -22,7 +20,7 @@ function Navbar({ activeTab, onTabChange, onAddClick }) {
       WebkitBackdropFilter: "blur(12px)",
       borderBottom: "1px solid var(--glass-border)",
       zIndex: 1000,
-      padding: "0 20px",
+      padding: "0 10px",
       height: "72px",
       display: "flex",
       alignItems: "center",
@@ -60,7 +58,7 @@ function Navbar({ activeTab, onTabChange, onAddClick }) {
             fontSize: "18px",
             boxShadow: "0 4px 12px rgba(139, 92, 246, 0.3)"
           }}>
-            FM
+            FL
           </div>
           <span style={{
             fontSize: "20px",
@@ -91,7 +89,7 @@ function Navbar({ activeTab, onTabChange, onAddClick }) {
                 display: "flex",
                 alignItems: "center",
                 gap: "8px",
-                padding: "8px 16px",
+                padding: "8px 10px",
                 borderRadius: "10px",
                 cursor: "pointer",
                 transition: "var(--transition)",
@@ -125,7 +123,9 @@ function Navbar({ activeTab, onTabChange, onAddClick }) {
         </div>
 
         {/* ➕ Quick Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <button type="button" onClick={onLogout} aria-label="Log out" title="Log out"
+            style={{ background: "transparent", border: 0, color: "var(--text-main)", padding: "8px", cursor: "pointer" }}><LogOut size={20} /></button>
           <button
             onClick={onAddClick}
             style={{

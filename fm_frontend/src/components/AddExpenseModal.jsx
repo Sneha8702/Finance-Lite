@@ -1,5 +1,7 @@
+import CreateCategory from "./CreateCategory";
+import { localDate } from "../utils/localDate";
 import { useState, useEffect } from "react";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/useTheme";
 import { addExpense, getCategories } from "../services/api";
 import Calculator from "./common/Calculator";
 
@@ -9,7 +11,7 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
     amount: "",
     category_id: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
+    date: localDate(),
   });
 
   const [categories, setCategories] = useState([]);
@@ -66,7 +68,7 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
         amount: "",
         category_id: "",
         description: "",
-        date: new Date().toISOString().split("T")[0],
+        date: localDate(),
       });
 
       onClose();
@@ -212,6 +214,11 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 4.5 6 7.5 9 4.5"></polyline></svg>
                 </div>
               </div>
+              <CreateCategory onCreated={(category) => {
+                setCategories(current => [...current.filter(item => item.id !== category.id), category]);
+                setExpense(current => ({ ...current, category_id: String(category.id) }));
+                setError("");
+              }} />
             </div>
           </div>
 

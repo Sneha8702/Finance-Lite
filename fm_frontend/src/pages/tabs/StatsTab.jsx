@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { localDate } from "../../utils/localDate";
+import { useState, useEffect, useCallback } from "react";
 import { getAnalytics } from "../../services/api";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell
@@ -13,7 +14,7 @@ function StatsTab({ initialType = "expense" }) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    date: new Date().toISOString().split("T")[0],
+    date: localDate(),
     start_date: "",
     end_date: "",
   });
@@ -24,7 +25,7 @@ function StatsTab({ initialType = "expense" }) {
     max: 0
   });
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     try {
       const params = { mode, type: analysisType };
@@ -34,11 +35,11 @@ function StatsTab({ initialType = "expense" }) {
       // Add more filters if needed
 
       const response = await getAnalytics(params);
-      setData(response.data || []);
+      setData((response.data || []).map(item => ({ ...item, amount: Number(item.amount) })));
 
       // Calculate summary stats
       if (response.data && response.data.length > 0) {
-        const amounts = response.data.map(item => item.amount);
+        const amounts = response.data.map(item => Number(item.amount));
         const total = amounts.reduce((a, b) => a + b, 0);
         setSummary({
           total,
@@ -55,11 +56,11 @@ function StatsTab({ initialType = "expense" }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [mode, filters.date, analysisType]);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [mode, filters.date, analysisType]);
+  }, [fetchAnalytics]);
 
   const modes = [
     { id: "daily", label: "Daily", icon: <Calendar size={14} /> },

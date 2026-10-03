@@ -33,7 +33,7 @@ function Login() {
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
-      setError(err?.response?.data?.error || "Invalid username or password");
+      setError(err?.response?.data?.error || "Check your username/password and verify your email if you just signed up.");
     }
   };
 
@@ -41,7 +41,7 @@ function Login() {
     <div className="auth-page">
       <div className="glass-card auth-card">
         <div className="brand-section">
-          <span className="brand-logo">FM</span>
+          <span className="brand-logo">FL</span>
           <h2 className="auth-title">Welcome Back</h2>
           <p className="auth-subtitle">Please enter your details to sign in</p>
         </div>
@@ -79,6 +79,8 @@ function Login() {
           </button>
         </form>
 
+        <p><Link className="auth-link" to="/forgot-password">Forgot password?</Link></p>
+        <p><Link className="auth-link" to="/verify-email">Resend verification email</Link></p>
         <div className="social-login">
           <button className="social-btn">G</button>
           <button className="social-btn">f</button>

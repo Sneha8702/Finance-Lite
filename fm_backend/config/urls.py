@@ -16,10 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path , include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,  # for login
-    TokenRefreshView,     # for refreshing token
-)
+from chelav.views.login.views import LoginTokenView, RefreshTokenView
 
 
 urlpatterns = [
@@ -27,7 +24,7 @@ urlpatterns = [
     path('', include('chelav.urls')),
 
     # JWT Authentication
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/', LoginTokenView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', RefreshTokenView.as_view(), name='token_refresh'),
 
 ]

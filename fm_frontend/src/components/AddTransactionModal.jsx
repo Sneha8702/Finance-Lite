@@ -1,5 +1,7 @@
+import CreateCategory from "./CreateCategory";
+import { localDate } from "../utils/localDate";
 import { useState, useEffect } from "react";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/useTheme";
 import { addExpense, addIncome, getCategories } from "../services/api";
 import Calculator from "./common/Calculator";
 
@@ -11,13 +13,13 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
     amount: "",
     category_id: "",
     description: "",
-    date: new Date().toISOString().split("T")[0],
+    date: localDate(),
   });
 
   const [income, setIncome] = useState({
     amount: "",
     source: "",
-    date: new Date().toISOString().split("T")[0],
+    date: localDate(),
     is_recurring: false,
   });
 
@@ -83,13 +85,13 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
         }
         
         const expenseData = {
-          amount: parseFloat(expense.amount),
+          amount: expense.amount,
           category_id: parseInt(expense.category_id),
           description: expense.description,
           date: expense.date
         };
 
-        console.log("Adding Expense:", expenseData);
+
 
         if (isNaN(expenseData.amount)) {
           setError("Please enter a valid amount");
@@ -101,18 +103,19 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
           amount: "",
           category_id: "",
           description: "",
-          date: new Date().toISOString().split("T")[0],
+          date: localDate(),
         });
       } else {
         // Construct clean payload for income based on user example
         const incomeData = {
-          amount: parseFloat(income.amount),
+          amount: income.amount,
           source: income.source,
           date: income.date,
+          frequency: income.is_recurring ? "monthly" : null,
           is_recurring: !!income.is_recurring // Ensure boolean
         };
 
-        console.log("Adding Income:", incomeData);
+
 
         if (isNaN(incomeData.amount)) {
           setError("Please enter a valid amount");
@@ -128,7 +131,7 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
         setIncome({
           amount: "",
           source: "",
-          date: new Date().toISOString().split("T")[0],
+          date: localDate(),
           is_recurring: false,
         });
       }
@@ -138,7 +141,9 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
     } catch (err) {
       console.error("Transaction Error:", err);
       // Show detailed error from backend if available
-      const backendError = err?.response?.data?.error || err?.response?.data?.message || err?.response?.data?.detail;
+      const fieldErrors = err?.response?.data?.errors;
+      const details = fieldErrors ? Object.entries(fieldErrors).map(([field, messages]) => `${field}: ${[].concat(messages).join(" ")}`).join(" ") : null;
+      const backendError = details || err?.response?.data?.error || err?.response?.data?.message || err?.response?.data?.detail;
       setError(backendError || `Failed to add ${type}. Please try again.`);
     }
   };
@@ -308,6 +313,11 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 4.5 6 7.5 9 4.5"></polyline></svg>
                 </div>
               </div>
+              <CreateCategory onCreated={(category) => {
+                setCategories(current => [...current.filter(item => item.id !== category.id), category]);
+                setExpense(current => ({ ...current, category_id: String(category.id) }));
+                setError("");
+              }} />
             </div>
           ) : (
             <div className="form-group">

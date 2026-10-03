@@ -3,12 +3,19 @@ from django.urls import path
 from chelav.views.login.views import SignupView, LoginView, LogoutView
 from chelav.views.expense.views import AddExpenseView , UserExpensesView
 from chelav.views.listing.category_list import CategoryListView
-from chelav.views.user_details.views import CurrentUserView
+from chelav.views.user_details.views import CurrentUserView, DeleteAccountView
 from chelav.views.home.views import ExpenseOverView
 from chelav.views.add_income.views import AddIncomeView
 from chelav.views.analysis.expense_analysis.views import UserExpenseAnalyticsView
 
+from chelav.views.login.email_views import RequestEmailView, ConfirmEmailView, ForgotPasswordView, ResetPasswordView
+
 urlpatterns = [
+    path("delete-account/", DeleteAccountView.as_view()),
+    path("resend-verification/", RequestEmailView.as_view()),
+    path("verify-email/", ConfirmEmailView.as_view()),
+    path("forgot-password/", ForgotPasswordView.as_view()),
+    path("reset-password/", ResetPasswordView.as_view()),
     path('signup/', SignupView.as_view(), name='signup'),
     # path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),

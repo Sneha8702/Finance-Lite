@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { useTheme } from "../../context/ThemeContext";
 
 function Calculator({ initialValue, onApply, onClose }) {
-  const { theme } = useTheme();
   const [display, setDisplay] = useState(initialValue?.toString() || "");
   const [equation, setEquation] = useState("");
 
@@ -30,7 +28,7 @@ function Calculator({ initialValue, onApply, onClose }) {
       const result = new Function(`return ${fullEquation}`)();
       setDisplay(Number(result).toFixed(2).replace(/\.00$/, ""));
       setEquation("");
-    } catch (e) {
+    } catch {
       setDisplay("Error");
     }
   };

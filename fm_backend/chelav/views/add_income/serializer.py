@@ -1,7 +1,3 @@
-from rest_framework import serializers
-from chelav.models import Income
+from chelav.serializers import IncomeSerializer
 
-class IncomeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Income
-        fields = ['id', 'amount', 'source', 'date']
+__all__ = ["IncomeSerializer"]

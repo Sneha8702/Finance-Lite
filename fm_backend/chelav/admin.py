@@ -14,7 +14,9 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'owner')
+    list_filter = ('owner',)
+    search_fields = ('name', 'owner__username')
 
 
 @admin.register(Income)

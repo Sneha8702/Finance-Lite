@@ -100,3 +100,5 @@ htmlcov/
 
 *.swp
 *.swo
+# Local pre-migration database backups
+.backups/

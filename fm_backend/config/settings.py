@@ -1,8 +1,13 @@
+import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Hosting environment variables take precedence over the local .env file.
+load_dotenv(BASE_DIR / ".env", override=False, interpolate=False)
 
 # SECURITY
 SECRET_KEY = 'django-insecure-i8*m)&9z4zmqu#v%rtz5ub*5l@i$ckpvm7kmz@5glu3sj&u)kl'
@@ -84,7 +89,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
@@ -95,12 +100,12 @@ STATIC_URL = 'static/'
 # DRF + JWT SETTINGS
 # -----------------------------
 REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_RATES': {'login': '10/min', 'signup': '5/min', 'refresh': '60/min'},
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated',
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ),
 }
 
@@ -114,3 +119,22 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+
+# Brevo SMTP. Set these in the backend process environment; never in VITE_*.
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp-relay.brevo.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("BREVO_SMTP_LOGIN", "")
+EMAIL_HOST_PASSWORD = os.environ.get("BREVO_SMTP_KEY", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Finance Management <no-reply@example.com>")
+EMAIL_TIMEOUT = 10
+EMAIL_VERIFICATION_SECONDS = 86400
+PASSWORD_RESET_TIMEOUT = 3600
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"].update({"email_action": "5/hour", "email_confirm": "20/hour"})
+
+SIMPLE_JWT["CHECK_REVOKE_TOKEN"] = True
+
+REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["delete_account"] = "5/hour"
