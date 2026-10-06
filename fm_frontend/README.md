@@ -32,6 +32,12 @@ python manage.py runserver 0.0.0.0:8000
 
 ## API URL
 
+Create `fm_frontend/.env` from `.env.example` and set the hosted backend URL later:
+
+```env
+VITE_API_URL=https://api.example.com
+```
+
 Set `VITE_API_URL` when the API is hosted separately:
 
 ```env
