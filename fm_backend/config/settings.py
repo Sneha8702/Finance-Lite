@@ -12,9 +12,11 @@ load_dotenv(BASE_DIR / ".env", override=False, interpolate=False)
 # SECURITY
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-change-this-secret-key-32")
 DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes"}
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get(
-    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.1.34"
-).split(",") if host.strip()]
+def env_list(name, default=""):
+    return [item.strip().rstrip("/") for item in os.environ.get(name, default).split(",") if item.strip()]
+
+
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,192.168.1.34")
 
 # Applications
 INSTALLED_APPS = [
@@ -49,9 +51,15 @@ MIDDLEWARE = [
 
 # CORS (for React frontend)
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = DEBUG
-if not DEBUG:
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",") if origin.strip()]
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,https://finance-lite.vercel.app",
+)
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5173,http://127.0.0.1:5173,https://finance-lite.vercel.app",
+)
 
 # URLs & Templates
 ROOT_URLCONF = 'config.urls'
@@ -88,13 +96,7 @@ if POSTGRES_DB:
             },
         }
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+
 
 
 # Password validators

@@ -42,8 +42,11 @@ For production, also set:
 DJANGO_SECRET_KEY=replace-with-a-long-random-secret
 DJANGO_DEBUG=false
 DJANGO_ALLOWED_HOSTS=example.com,api.example.com
-CORS_ALLOWED_ORIGINS=https://example.com
+CORS_ALLOWED_ORIGINS=https://finance-lite.vercel.app
+CSRF_TRUSTED_ORIGINS=https://finance-lite.vercel.app
 ```
+
+`DJANGO_ALLOWED_HOSTS` must contain the Django API hostname, not the Vercel frontend hostname. CORS and CSRF origins should contain the frontend origin without a trailing slash.
 
 ## Database setup
 
