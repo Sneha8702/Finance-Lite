@@ -1,7 +1,13 @@
 import axios from "axios";
 
+const defaultApiHost = typeof window !== "undefined" && window.location.hostname === "localhost"
+  ? "127.0.0.1"
+  : typeof window !== "undefined" ? window.location.hostname : "127.0.0.1";
+const defaultApiUrl =
+  `http://${defaultApiHost}:8000`;
+
 const API = axios.create({
-  baseURL: import.meta.env?.VITE_API_URL || "http://127.0.0.1:8000",
+  baseURL: import.meta.env?.VITE_API_URL || defaultApiUrl,
 });
 
 const publicPaths = ["/api/token/", "/signup/", "/api/token/refresh/", "/resend-verification/", "/verify-email/", "/forgot-password/", "/reset-password/"];

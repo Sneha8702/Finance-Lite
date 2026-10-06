@@ -10,7 +10,7 @@ function Navbar({ activeTab, onTabChange, onAddClick, onLogout }) {
   ];
 
   return (
-    <nav style={{
+    <nav className="main-navbar" style={{
       position: "fixed",
       top: 0,
       left: 0,
@@ -45,7 +45,7 @@ function Navbar({ activeTab, onTabChange, onAddClick, onLogout }) {
             userSelect: "none"
           }}
         >
-          <div style={{
+          <div className="nav-links" style={{
             background: "linear-gradient(135deg, var(--primary), var(--secondary))",
             color: "white",
             width: "36px",
@@ -72,7 +72,7 @@ function Navbar({ activeTab, onTabChange, onAddClick, onLogout }) {
         </div>
 
         {/* 🧭 Nav Links */}
-        <div style={{
+        <div className="nav-links" style={{
           display: "flex",
           alignItems: "center",
           gap: "8px",
@@ -84,6 +84,7 @@ function Navbar({ activeTab, onTabChange, onAddClick, onLogout }) {
           {navItems.map((item) => (
             <div
               key={item.id}
+              className="nav-item"
               onClick={() => onTabChange(item.id)}
               style={{
                 display: "flex",
@@ -123,10 +124,11 @@ function Navbar({ activeTab, onTabChange, onAddClick, onLogout }) {
         </div>
 
         {/* ➕ Quick Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="nav-actions" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <button type="button" onClick={onLogout} aria-label="Log out" title="Log out"
             style={{ background: "transparent", border: 0, color: "var(--text-main)", padding: "8px", cursor: "pointer" }}><LogOut size={20} /></button>
           <button
+            className="nav-add-button"
             onClick={onAddClick}
             style={{
               background: "var(--primary)",

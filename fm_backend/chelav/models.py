@@ -67,5 +67,6 @@ class EmailActionToken(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     digest = models.CharField(max_length=64, unique=True)
     purpose = models.CharField(max_length=10, choices=[("verify", "Verify"), ("reset", "Reset")])
+    created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     consumed_at = models.DateTimeField(null=True, blank=True)

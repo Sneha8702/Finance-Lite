@@ -53,6 +53,9 @@ class ExpenseSerializer(serializers.ModelSerializer):
         model = Expense
         fields = ["amount", "category_id", "description", "date"]
 
+    def validate_description(self, value):
+        return value.strip()
+
 
 class IncomeSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal("1"), max_value=Decimal("10000000"))
@@ -61,6 +64,12 @@ class IncomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Income
         fields = ["amount", "source", "date", "is_recurring", "frequency"]
+
+    def validate_source(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("Source cannot be empty")
+        return value
 
     def validate(self, attrs):
         if attrs.get("is_recurring") and not attrs.get("frequency"):

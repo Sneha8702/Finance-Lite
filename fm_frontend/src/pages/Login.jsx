@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { loginUser } from "../services/api"; // ✅ use API service
 import { Link, useNavigate } from "react-router-dom";
+import PasswordInput from "../components/PasswordInput";
 
 function Login() {
   const [form, setForm] = useState({
@@ -63,10 +64,9 @@ function Login() {
 
           <div className="form-group">
             <label className="form-label">Password</label>
-            <input
+            <PasswordInput
               className="form-input"
               name="password"
-              type="password"
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
@@ -80,7 +80,6 @@ function Login() {
         </form>
 
         <p><Link className="auth-link" to="/forgot-password">Forgot password?</Link></p>
-        <p><Link className="auth-link" to="/verify-email">Resend verification email</Link></p>
         <div className="social-login">
           <button className="social-btn">G</button>
           <button className="social-btn">f</button>

@@ -2,7 +2,7 @@ import CreateCategory from "./CreateCategory";
 import { localDate } from "../utils/localDate";
 import { useState, useEffect } from "react";
 import { useTheme } from "../context/useTheme";
-import { addExpense, addIncome, getCategories } from "../services/api";
+import { addExpense, addIncome, getCategories, getExpenseOverview } from "../services/api";
 import Calculator from "./common/Calculator";
 
 function AddTransactionModal({ show, onClose, onSuccess }) {
@@ -27,9 +27,29 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [error, setError] = useState("");
   const [showCalculator, setShowCalculator] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const resetForm = () => {
+    setType("expense");
+    setExpense({ amount: "", category_id: "", description: "", date: localDate() });
+    setIncome({ amount: "", source: "", date: localDate(), is_recurring: false });
+    setCategories([]);
+    setError("");
+    setShowCalculator(false);
+  };
+
+  const closeModal = () => {
+    if (saving) return;
+    resetForm();
+    onClose();
+  };
 
   // 📡 Fetch categories on mount
   useEffect(() => {
+    if (!show) {
+      resetForm();
+      return;
+    }
     if (show) {
       setError(""); 
       setShowCalculator(false);
@@ -75,6 +95,7 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (saving) return;
     setError("");
 
     try {
@@ -91,11 +112,21 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
           date: expense.date
         };
 
-
-
-        if (isNaN(expenseData.amount)) {
+        const amount = Number(expenseData.amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
           setError("Please enter a valid amount");
           return;
+        }
+        expenseData.amount = amount;
+
+        setSaving(true);
+        const overview = await getExpenseOverview();
+        const availableBalance = Number(overview.balance);
+        if (Number.isFinite(availableBalance) && amount > availableBalance) {
+          const confirmed = window.confirm(
+            `This expense is greater than your available balance of Rs. ${availableBalance.toFixed(2)}. Do you still want to add it?`
+          );
+          if (!confirmed) return;
         }
 
         await addExpense(expenseData);
@@ -117,16 +148,19 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
 
 
 
-        if (isNaN(incomeData.amount)) {
+        const amount = Number(incomeData.amount);
+        if (!Number.isFinite(amount) || amount <= 0) {
           setError("Please enter a valid amount");
           return;
         }
+        incomeData.amount = amount;
 
         if (!incomeData.source) {
           setError("Please enter a source");
           return;
         }
 
+        setSaving(true);
         await addIncome(incomeData);
         setIncome({
           amount: "",
@@ -145,13 +179,15 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
       const details = fieldErrors ? Object.entries(fieldErrors).map(([field, messages]) => `${field}: ${[].concat(messages).join(" ")}`).join(" ") : null;
       const backendError = details || err?.response?.data?.error || err?.response?.data?.message || err?.response?.data?.detail;
       setError(backendError || `Failed to add ${type}. Please try again.`);
+    } finally {
+      setSaving(false);
     }
   };
 
   if (!show) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ padding: "20px" }}>
+    <div className="modal-overlay" onClick={closeModal} style={{ padding: "20px" }}>
       <div 
         className="glass-card" 
         onClick={(e) => e.stopPropagation()}
@@ -205,6 +241,8 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
             marginBottom: "8px"
           }}>
             <button
+              type="button"
+              disabled={saving}
               onClick={() => setType("expense")}
               style={{
                 flex: 1,
@@ -222,6 +260,8 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
               Expense
             </button>
             <button
+              type="button"
+              disabled={saving}
               onClick={() => setType("income")}
               style={{
                 flex: 1,
@@ -344,7 +384,6 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
               placeholder={type === "expense" ? "What did you spend on?" : "Optional notes"}
               value={type === "expense" ? expense.description : income.notes || ""}
               onChange={handleChange}
-              required={type === "expense"}
               style={{ background: "var(--input-bg)", border: "1px solid var(--glass-border)", borderRadius: "12px", color: "var(--text-main)" }}
             />
           </div>
@@ -389,13 +428,15 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
               type="button" 
               className="social-btn" 
               style={{ flex: 1, padding: "14px", borderRadius: "14px" }} 
-              onClick={onClose}
+              onClick={closeModal}
+              disabled={saving}
             >
               Cancel
             </button>
             <button 
               type="submit" 
               className="primary-btn" 
+              disabled={saving}
               style={{ 
                 flex: 2, 
                 padding: "14px", 
@@ -407,7 +448,7 @@ function AddTransactionModal({ show, onClose, onSuccess }) {
                 fontWeight: "700"
               }}
             >
-              Save {type === "expense" ? "Expense" : "Income"}
+              {saving ? "Saving..." : `Save ${type === "expense" ? "Expense" : "Income"}`}
             </button>
           </div>
         </form>

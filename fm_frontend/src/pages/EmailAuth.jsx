@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import API from "../services/api";
+import PasswordInput from "../components/PasswordInput";
 
 export default function EmailAuth({ mode }) {
   const location = useLocation();
@@ -48,9 +49,9 @@ export default function EmailAuth({ mode }) {
         <form className="auth-form" onSubmit={submit}>
           {confirm ? (reset ? <>
             <label className="form-label" htmlFor="new-password">New password</label>
-            <input id="new-password" className="form-input" type="password" autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} />
+            <PasswordInput id="new-password" autoComplete="new-password" required value={password} onChange={event => setPassword(event.target.value)} />
             <label className="form-label" htmlFor="confirm-password">Confirm password</label>
-            <input id="confirm-password" className="form-input" type="password" autoComplete="new-password" required value={password2} onChange={event => setPassword2(event.target.value)} />
+            <PasswordInput id="confirm-password" autoComplete="new-password" required value={password2} onChange={event => setPassword2(event.target.value)} />
           </> : <p>Confirm your email to activate your account.</p>) : <>
             <label className="form-label" htmlFor="account-email">Email address</label>
             <input id="account-email" className="form-input" type="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} />
@@ -59,7 +60,7 @@ export default function EmailAuth({ mode }) {
         </form>
       ))}
       <p><Link className="auth-link" to="/">Back to login</Link></p>
-      {reset && <p><Link className="auth-link" to="/forgot-password">Request a new reset link</Link></p>}
+      {reset && !done && <p><Link className="auth-link" to="/forgot-password">Request a new reset link</Link></p>}
       {verify && token && !done && <p><Link className="auth-link" to="/verify-email" onClick={() => { window.location.href = "/verify-email"; }}>Request a new verification link</Link></p>}
     </div></div>
   );

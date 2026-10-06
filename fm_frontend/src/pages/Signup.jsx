@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { signupUser } from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
+import PasswordInput from "../components/PasswordInput";
 
 function Signup() {
   const [form, setForm] = useState({
@@ -79,10 +80,9 @@ function Signup() {
           </div>
           <div className="form-group">
             <label className="form-label">Password</label>
-            <input
+            <PasswordInput
               className="form-input"
               name="password"
-              type="password"
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
@@ -92,10 +92,9 @@ function Signup() {
 
           <div className="form-group">
             <label className="form-label">Confirm Password</label>
-            <input
+            <PasswordInput
               className="form-input"
               name="password2"
-              type="password"
               placeholder="••••••••"
               value={form.password2}
               onChange={handleChange}

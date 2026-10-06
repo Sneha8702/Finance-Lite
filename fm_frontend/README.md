@@ -1,16 +1,62 @@
-# React + Vite
+# Finance Management Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend is a React 19 application built with Vite.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js with npm
+- The Finance Management backend running on port `8000`
 
-## React Compiler
+## Install and run
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```powershell
+cd fm_frontend
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open `http://localhost:5173`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+For LAN access from a phone or another computer:
+
+```powershell
+npm run dev -- --host
+```
+
+The backend should run with:
+
+```powershell
+cd fm_backend
+python manage.py runserver 0.0.0.0:8000
+```
+
+## API URL
+
+Set `VITE_API_URL` when the API is hosted separately:
+
+```env
+VITE_API_URL=http://192.168.1.34:8000
+```
+
+Restart Vite after changing environment variables. When `VITE_API_URL` is not set, the app uses `127.0.0.1:8000` for localhost and the current frontend hostname for LAN development.
+
+## Available commands
+
+```powershell
+npm run dev       # Start the development server
+npm run lint      # Run ESLint
+npm run build     # Create a production build
+npm run preview   # Preview the production build
+```
+
+## Main areas
+
+- Login, signup, email verification, and password reset
+- Dashboard overview and current balance
+- Income and expense entry
+- User and shared categories
+- Expense history with filters and pagination
+- Daily, monthly, and yearly analytics
+- Profile, theme switching, logout, and account deletion
+
+The UI includes responsive layouts, password visibility controls, duplicate-submit protection, fresh section data loading, logout confirmation, and confirmation for expenses above the available balance.

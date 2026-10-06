@@ -1,5 +1,5 @@
 import { localDate } from "../../utils/localDate";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getAnalytics } from "../../services/api";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell
@@ -24,9 +24,12 @@ function StatsTab({ initialType = "expense" }) {
     average: 0,
     max: 0
   });
+  const requestId = useRef(0);
 
   const fetchAnalytics = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
+    setData([]);
     try {
       const params = { mode, type: analysisType };
       if (mode === "daily") {
@@ -35,6 +38,7 @@ function StatsTab({ initialType = "expense" }) {
       // Add more filters if needed
 
       const response = await getAnalytics(params);
+      if (currentRequest !== requestId.current) return;
       setData((response.data || []).map(item => ({ ...item, amount: Number(item.amount) })));
 
       // Calculate summary stats
@@ -51,10 +55,12 @@ function StatsTab({ initialType = "expense" }) {
       }
     } catch (err) {
       console.error("Failed to fetch analytics:", err);
-      setData([]);
-      setSummary({ total: 0, average: 0, max: 0 });
+      if (currentRequest === requestId.current) {
+        setData([]);
+        setSummary({ total: 0, average: 0, max: 0 });
+      }
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, [mode, filters.date, analysisType]);
 

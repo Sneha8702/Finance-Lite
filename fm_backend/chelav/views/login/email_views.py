@@ -3,6 +3,7 @@ from smtplib import SMTPException
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
@@ -36,23 +37,34 @@ class PublicEmailView(APIView):
 
 class RequestEmailView(PublicEmailView):
     purpose = "verify"
+    cooldown = timedelta(minutes=5)
 
     def post(self, request):
         data = EmailInput(data=request.data)
         if not data.is_valid():
             return Response({"error": "Enter a valid email address"}, status=400)
-        account = AccountEmail.objects.filter(email=data.validated_data["email"].lower()).select_related("user").first()
-        eligible = account and (
-            account.verified_at is None if self.purpose == "verify"
-            else account.verified_at is not None and account.user.is_active
-        )
-        if eligible:
-            try:
-                with transaction.atomic():
+        try:
+            with transaction.atomic():
+                account = AccountEmail.objects.select_for_update().filter(
+                    email=data.validated_data["email"].lower()
+                ).select_related("user").first()
+                eligible = account and (
+                    account.verified_at is None if self.purpose == "verify"
+                    else account.verified_at is not None and account.user.is_active
+                )
+                recently_sent = eligible and EmailActionToken.objects.filter(
+                    user=account.user,
+                    purpose=self.purpose,
+                    created_at__gte=timezone.now() - self.cooldown,
+                ).exists()
+                if eligible and not recently_sent:
+                    EmailActionToken.objects.filter(
+                        user=account.user, purpose=self.purpose, consumed_at__isnull=True
+                    ).update(consumed_at=timezone.now())
                     send_action_email(account.user, self.purpose)
-            except (SMTPException, OSError) as exc:
-                # Same public response prevents revealing which addresses exist.
-                logger.warning("Email delivery failed: %s (SMTP code %s). Run python manage.py check_email.", type(exc).__name__, getattr(exc, "smtp_code", None))
+        except (SMTPException, OSError) as exc:
+            # Same public response prevents revealing which addresses exist.
+            logger.warning("Email delivery failed: %s (SMTP code %s). Run python manage.py check_email.", type(exc).__name__, getattr(exc, "smtp_code", None))
         return Response({"message": "If this address is eligible, an email will arrive shortly. Check your spam folder too."})
 
 
@@ -102,7 +114,7 @@ class ConfirmEmailView(PublicEmailView):
                 user.is_active = True
                 user.save(update_fields=["is_active"])
             EmailActionToken.objects.filter(user=user, purpose=self.purpose, consumed_at__isnull=True).update(consumed_at=now)
-        return Response({"message": "Email verified. You can now log in." if self.purpose == "verify" else "Password changed. Log in with your new password."})
+        return Response({"message": "Email verified. You can now log in." if self.purpose == "verify" else "Password changed 🎉. Log in with your new password."})
 
 
 class ResetPasswordView(ConfirmEmailView):

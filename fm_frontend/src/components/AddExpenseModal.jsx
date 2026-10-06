@@ -18,6 +18,19 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [error, setError] = useState("");
   const [showCalculator, setShowCalculator] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const resetForm = () => {
+    setExpense({ amount: "", category_id: "", description: "", date: localDate() });
+    setError("");
+    setShowCalculator(false);
+  };
+
+  const closeModal = () => {
+    if (saving) return;
+    resetForm();
+    onClose();
+  };
 
   // 📡 Fetch categories on mount
   useEffect(() => {
@@ -53,15 +66,22 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
+    if (saving) return;
     if (!expense.category_id) {
       setError("Please select a category");
       return;
     }
 
     setError("");
+    const amount = Number(expense.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Please enter a valid amount");
+      return;
+    }
+    setSaving(true);
 
     try {
-      await addExpense(expense);
+      await addExpense({ ...expense, amount });
       
       // Reset form
       setExpense({
@@ -76,13 +96,15 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
     } catch (err) {
       console.error(err);
       setError(err?.response?.data?.error || "Failed to add expense. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
   if (!show) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose} style={{ padding: "20px" }}>
+    <div className="modal-overlay" onClick={closeModal} style={{ padding: "20px" }}>
       <div 
         className="glass-card" 
         onClick={(e) => e.stopPropagation()}
@@ -230,7 +252,6 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
               placeholder="What did you spend on?"
               value={expense.description}
               onChange={handleExpenseChange}
-              required
               style={{ 
                 background: "var(--input-bg)", 
                 border: "1px solid var(--glass-border)", 
@@ -273,13 +294,15 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
                 fontWeight: "600",
                 color: "var(--text-muted)"
               }} 
-              onClick={onClose}
+              onClick={closeModal}
+              disabled={saving}
             >
               Cancel
             </button>
             <button 
               type="submit" 
               className="primary-btn" 
+              disabled={saving}
               style={{ 
                 flex: 2, 
                 padding: "14px", 
@@ -290,7 +313,7 @@ function AddExpenseModal({ show, onClose, onSuccess }) {
                 fontWeight: "700"
               }}
             >
-              Save Expense
+              {saving ? "Saving..." : "Save Expense"}
             </button>
           </div>
 

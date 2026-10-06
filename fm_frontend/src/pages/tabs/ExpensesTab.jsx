@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getExpenses, getCategories } from "../../services/api";
 
 function ExpensesTab() {
@@ -18,6 +18,7 @@ function ExpensesTab() {
     total_pages: 1,
     page_size: 10
   });
+  const requestId = useRef(0);
 
   // 📡 Fetch categories for filter dropdown
   const fetchCategories = async () => {
@@ -33,7 +34,9 @@ function ExpensesTab() {
 
   // 📡 Fetch expenses with filters and pagination
   const fetchExpenses = useCallback(async () => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
+    setExpenses([]);
     try {
       const params = { page }; // Include page parameter
       if (filters.category_id) params.category_id = filters.category_id;
@@ -43,16 +46,18 @@ function ExpensesTab() {
       const data = await getExpenses(params);
 
       // Update data handling for paginated response structure
-      setExpenses(data.results || []);
-      setPagination({
-        count: data.count || 0,
-        total_pages: data.total_pages || 1,
-        page_size: data.page_size || 10
-      });
+      if (currentRequest === requestId.current) {
+        setExpenses(data.results || []);
+        setPagination({
+          count: data.count || 0,
+          total_pages: data.total_pages || 1,
+          page_size: data.page_size || 10
+        });
+      }
     } catch (err) {
       console.error("Failed to fetch expenses:", err);
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, [page, filters]);
 
@@ -60,21 +65,18 @@ function ExpensesTab() {
     fetchCategories();
   }, []);
 
-  // Reset page to 1 whenever filters change
-  useEffect(() => {
-    setPage(1);
-  }, [filters]);
-
   // Fetch expenses when page or filters change
   useEffect(() => {
     fetchExpenses();
   }, [fetchExpenses]);
 
   const handleFilterChange = (e) => {
+    setPage(1);
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
   const resetFilters = () => {
+    setPage(1);
     setFilters({ category_id: "", start_date: "", end_date: "" });
   };
 

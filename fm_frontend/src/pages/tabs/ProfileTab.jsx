@@ -28,14 +28,14 @@ function ProfileTab({ username = "User", email, accountId, emailVerified, onLogo
   };
 
   return (
-    <div className="glass-card" style={{ 
+    <div className="glass-card profile-card" style={{
       padding: "40px 24px", 
       textAlign: "center", 
       background: "var(--glass-bg)",
       margin: "0 auto",
       boxShadow: "var(--shadow)"
     }}>
-      <div style={{ 
+      <div className="profile-avatar" style={{
         width: "100px", 
         height: "100px", 
         background: "linear-gradient(135deg, var(--primary), var(--secondary))", 
@@ -103,7 +103,7 @@ function ProfileTab({ username = "User", email, accountId, emailVerified, onLogo
           </div>
         </div>
 
-        <div style={{ 
+        <div className="profile-detail-row" style={{
           padding: "16px", 
           background: "var(--input-bg)", 
           borderRadius: "16px",
@@ -116,10 +116,10 @@ function ProfileTab({ username = "User", email, accountId, emailVerified, onLogo
             <Shield size={20} color="var(--text-muted)" />
             <span style={{ color: "var(--text-muted)", fontSize: "14px" }}>Account ID</span>
           </div>
-          <span style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "14px" }}>{accountId ? `#${accountId}` : "?"}</span>
+          <span style={{ color: "var(--text-main)", fontWeight: "600", fontSize: "14px" }}>{accountId ? `${accountId}` : "?"}</span>
         </div>
 
-        <div style={{ 
+        <div className="profile-detail-row" style={{
           padding: "16px", 
           background: "var(--input-bg)", 
           borderRadius: "16px",

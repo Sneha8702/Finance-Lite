@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { logoutUser, getUserDetails } from "../services/api";
 import AddTransactionModal from "../components/AddTransactionModal";
 import MobileLayout from "../components/layout/MobileLayout";
+import { LogOut, X } from "lucide-react";
 
 // Tab Imports
 import HomeTab from "./tabs/HomeTab";
@@ -16,11 +17,24 @@ function Dashboard() {
   const [username, setUsername] = useState("");
   const [userDetails, setUserDetails] = useState({});
   const [activeTab, setActiveTab] = useState("home");
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // 🚪 Logout
+  const requestLogout = () => {
+    if (!loggingOut) setShowLogoutConfirm(true);
+  };
+
   const handleLogout = async () => {
-    await logoutUser();
-    navigate("/", { replace: true });
+    if (loggingOut) return;
+    setShowLogoutConfirm(false);
+    setLoggingOut(true);
+    try {
+      await logoutUser();
+      navigate("/", { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   // 🔐 Check auth & Load Data
@@ -50,6 +64,11 @@ function Dashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [statsType, setStatsType] = useState("expense");
 
+  const handleTabChange = (tab) => {
+    setShowModal(false);
+    setActiveTab(tab);
+  };
+
   // 📑 Render Active Tab
   const renderTabContent = () => {
     switch (activeTab) {
@@ -59,7 +78,7 @@ function Dashboard() {
             username={username}
             onTabChange={(tab, type) => {
               if (type) setStatsType(type);
-              setActiveTab(tab);
+              handleTabChange(tab);
             }}
             key={`home-${refreshKey}`}
           />
@@ -83,14 +102,14 @@ function Dashboard() {
   return (
     <MobileLayout
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       onAddClick={() => setShowModal(true)}
-      onLogout={handleLogout}
+      onLogout={requestLogout}
       username={username}
     >
       {/* 🔷 Streamlined Hero Section */}
       <div style={{ marginBottom: "32px", animation: "slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1)" }}>
-        <h1 style={{
+          <h1 className="dashboard-title" style={{
           fontSize: "32px",
           fontWeight: "800",
           color: "var(--text-main)",
@@ -117,6 +136,28 @@ function Dashboard() {
           setRefreshKey(prev => prev + 1);
         }}
       />
+      {showLogoutConfirm && (
+        <div className="modal-overlay" role="presentation" onClick={() => setShowLogoutConfirm(false)}>
+          <div
+            className="glass-card logout-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-title"
+            onClick={event => event.stopPropagation()}
+          >
+            <button type="button" className="logout-confirm-close" aria-label="Close logout confirmation" onClick={() => setShowLogoutConfirm(false)}>
+              <X size={20} />
+            </button>
+            <div className="logout-confirm-icon"><LogOut size={24} /></div>
+            <h2 id="logout-title">Log out?</h2>
+            <p>Your current session will be ended on this device.</p>
+            <div className="logout-confirm-actions">
+              <button type="button" className="social-btn" onClick={() => setShowLogoutConfirm(false)}>Cancel</button>
+              <button type="button" className="primary-btn logout-confirm-submit" onClick={handleLogout}>Log out</button>
+            </div>
+          </div>
+        </div>
+      )}
     </MobileLayout>
   );
 }

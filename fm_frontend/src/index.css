@@ -201,6 +201,213 @@ body {
   color: #94a3b8;
 }
 
+.password-input-wrapper {
+  position: relative;
+}
+
+.password-input-wrapper .form-input {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-visibility-btn {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.password-visibility-btn:hover {
+  color: var(--text-main);
+}
+
+.logout-confirm-modal {
+  position: relative;
+  width: min(420px, calc(100vw - 40px));
+  padding: 32px;
+  text-align: center;
+  background: var(--glass-bg);
+  box-shadow: var(--shadow);
+}
+
+.logout-confirm-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  padding: 6px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-confirm-close:hover {
+  color: var(--text-main);
+  background: var(--input-bg);
+}
+
+.logout-confirm-icon {
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  color: var(--primary);
+  background: rgba(124, 58, 237, 0.14);
+  border-radius: 16px;
+}
+
+.logout-confirm-modal h2 {
+  margin: 0 0 8px;
+  color: var(--text-main);
+  font-size: 22px;
+}
+
+.logout-confirm-modal p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.logout-confirm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.logout-confirm-actions > button {
+  flex: 1;
+  margin: 0;
+}
+
+.logout-confirm-submit {
+  background: linear-gradient(135deg, #7c3aed, #06b6d4);
+}
+
+.profile-detail-row > span {
+  min-width: 0;
+  max-width: 62%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .main-navbar {
+    padding: 0 6px !important;
+  }
+
+  .main-navbar .nav-links {
+    gap: 0 !important;
+    padding: 3px !important;
+  }
+
+  .main-navbar .nav-item {
+    padding: 7px !important;
+  }
+
+  .main-navbar .nav-actions {
+    gap: 0 !important;
+  }
+
+  .main-navbar .nav-add-button {
+    padding: 8px !important;
+  }
+
+  .profile-card {
+    padding: 28px 16px !important;
+  }
+
+  .profile-avatar {
+    width: 76px !important;
+    height: 76px !important;
+    margin-bottom: 16px !important;
+    font-size: 30px !important;
+  }
+
+  .dashboard-title {
+    font-size: clamp(24px, 8vw, 32px) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 12px;
+  }
+
+  .auth-card {
+    padding: 24px 16px;
+    border-radius: 14px;
+  }
+
+  .profile-card h2 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 24px !important;
+  }
+
+  .profile-detail-row > div:first-child {
+    min-width: 0;
+  }
+
+  .profile-detail-row > div:first-child span {
+    font-size: 12px !important;
+  }
+
+  .profile-detail-row {
+    flex-wrap: wrap;
+    align-items: flex-start !important;
+    gap: 6px !important;
+  }
+
+  .profile-detail-row > span {
+    flex: 1 1 100%;
+    max-width: 100% !important;
+    margin-left: 32px;
+    text-align: left;
+    font-size: 12px !important;
+  }
+
+  .form-input {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 360px) {
+  .main-navbar .nav-logo-text {
+    display: none !important;
+  }
+
+  .main-navbar > div {
+    gap: 3px !important;
+  }
+
+  .main-navbar .nav-item {
+    padding: 6px !important;
+  }
+
+  .profile-detail-row {
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  .profile-detail-row > span {
+    max-width: 58%;
+    font-size: 12px !important;
+  }
+}
+
 /* Buttons */
 .primary-btn {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
