@@ -1,6 +1,6 @@
-# Finance Management
+# Finance Lite
 
-Finance Management is a full-stack personal finance tracker with account authentication, email verification, password reset, income and expense tracking, categories, summaries, analytics, and profile management.
+Finance Lite is a full-stack personal finance tracker with account authentication, email verification, password reset, income and expense tracking, categories, summaries, analytics, and profile management.
 
 ## Project structure
 
